@@ -14,7 +14,7 @@ return new class extends Migration
    public function up()
 {
     Schema::table('users', function (Blueprint $table) {
-        $table->boolean('is_admin')->default(false); // Atau ->default(0) untuk TINYINT(1)
+        $table->boolean('is_admin')->default(false); 
     });
 }
 

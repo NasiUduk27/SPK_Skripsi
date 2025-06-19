@@ -21,7 +21,7 @@ class User extends Authenticatable
         'name',
         'email',
         'password',
-        'is_admin', // Sudah ada dan benar
+        'is_admin', 
     ];
 
     /**
@@ -41,34 +41,27 @@ class User extends Authenticatable
      */
     protected $casts = [
         'email_verified_at' => 'datetime',
-        'is_admin' => 'boolean', // Sudah ada dan benar
+        'is_admin' => 'boolean',
 
     ];
 
-    // Relasi ke Kriteria (Jika kriteria juga spesifik per user, yang jarang)
-    // Jika kriteria global, relasi ini tidak perlu, atau hanya admin yang punya relasi ini
     public function kriterias()
     {
         return $this->hasMany(Kriteria::class);
     }
 
-    // Relasi ke Alternatif
     public function alternatifs()
     {
         return $this->hasMany(Alternatif::class);
     }
 
-    // Relasi ke NilaiAlternatif
     public function nilaiAlternatifs()
     {
         return $this->hasMany(NilaiAlternatif::class);
     }
 
-    /**
-     * Helper method to check if the user is an admin.
-     */
     public function isAdmin(): bool
     {
-        return (bool) $this->is_admin; // Mengembalikan true jika is_admin adalah 1/true
+        return (bool) $this->is_admin;
     }
 }

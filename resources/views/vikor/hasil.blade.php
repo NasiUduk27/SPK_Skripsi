@@ -18,8 +18,6 @@
                 <button type="button" class="btn-close" data-bs-dismiss="alert" aria-label="Close"></button>
             </div>
         @endif
-
-        {{-- 1. Data Input (sama seperti sebelumnya) --}}
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-primary text-white">
                 <h3 class="card-title mb-0"><i class="fas fa-clipboard-list me-2"></i>Data Input</h3>
@@ -67,7 +65,6 @@
                                     @foreach ($alternatifs as $alternatif)
                                     <tr>
                                         <td>{{ $alternatif->nama_alternatif }}</td>
-                                        {{-- Gunakan accessor untuk menampilkan nilai dan kategori jika diperlukan --}}
                                         @foreach ($kriterias as $kriteria)
                                             <td>
                                                 @php
@@ -89,8 +86,6 @@
                 </div>
             </div>
         </div>
-
-        {{-- 2. Nilai F* dan F- (sama seperti sebelumnya) --}}
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-info text-white">
                 <h3 class="card-title mb-0"><i class="fas fa-calculator me-2"></i>Nilai F* dan F-</h3>
@@ -118,8 +113,6 @@
                 </div>
             </div>
         </div>
-
-        {{-- 3. Nilai Si dan Ri (sama seperti sebelumnya) --}}
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-success text-white">
                 <h3 class="card-title mb-0"><i class="fas fa-balance-scale me-2"></i>Nilai Si dan Ri</h3>
@@ -147,8 +140,6 @@
                 </div>
             </div>
         </div>
-
-        {{-- 4. Nilai Qi dan Ranking (sama seperti sebelumnya) --}}
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-warning text-dark">
                 <h3 class="card-title mb-0"><i class="fas fa-sort-numeric-down-alt me-2"></i>Nilai Qi dan Ranking</h3>
@@ -180,8 +171,6 @@
                 </div>
             </div>
         </div>
-
-        {{-- 5. Solusi Kompromi Terbaik (Perubahan di sini) --}}
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-success text-white">
                 <h3 class="card-title mb-0"><i class="fas fa-trophy me-2"></i>Solusi Kompromi Terbaik</h3>

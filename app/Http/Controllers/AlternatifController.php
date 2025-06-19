@@ -19,13 +19,13 @@ class AlternatifController extends Controller
 
     public function index()
     {
-        /** @var User $user */ // Type hinting untuk autocomplete dan validasi
+        /** @var User $user */
         $user = Auth::user();
 
         if ($user->isAdmin()) {
-            $alternatifs = Alternatif::all(); // Admin melihat semua alternatif
+            $alternatifs = Alternatif::all();
         } else {
-            $alternatifs = $user->alternatifs; // User biasa hanya melihat alternatifnya sendiri
+            $alternatifs = $user->alternatifs;
         }
         return view('alternatif.index', compact('alternatifs'));
     }
@@ -38,12 +38,12 @@ class AlternatifController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nama_alternatif' => 'required|string|max:255|unique:alternatifs', // Unique across all users
+            'nama_alternatif' => 'required|string|max:255|unique:alternatifs',
         ]);
 
         Alternatif::create([
             'nama_alternatif' => $request->nama_alternatif,
-            'user_id' => Auth::id(), // Otomatis mengaitkan alternatif dengan user yang sedang login
+            'user_id' => Auth::id(),
         ]);
 
         return redirect()->route('alternatif.index')->with('success', 'Alternatif berhasil ditambahkan!');
@@ -53,7 +53,6 @@ class AlternatifController extends Controller
     {
         /** @var User $user */
         $user = Auth::user();
-        // Hanya pemilik alternatif atau admin yang bisa melihat detail
         if ($user->id !== $alternatif->user_id && !$user->isAdmin()) {
             abort(403, 'Anda tidak memiliki akses ke alternatif ini.');
         }
@@ -66,7 +65,6 @@ class AlternatifController extends Controller
     {
         /** @var User $user */
         $user = Auth::user();
-        // Hanya pemilik alternatif atau admin yang bisa mengedit
         if ($user->id !== $alternatif->user_id && !$user->isAdmin()) {
             abort(403, 'Anda tidak memiliki akses untuk mengedit alternatif ini.');
         }
@@ -77,7 +75,6 @@ class AlternatifController extends Controller
     {
         /** @var User $user */
         $user = Auth::user();
-        // Hanya pemilik alternatif atau admin yang bisa update
         if ($user->id !== $alternatif->user_id && !$user->isAdmin()) {
             abort(403, 'Anda tidak memiliki akses untuk memperbarui alternatif ini.');
         }
@@ -93,9 +90,6 @@ class AlternatifController extends Controller
     {
         /** @var User $user */
         $user = Auth::user();
-        // if ($user->id !== $alternatif->user_id && !$user->isAdmin()) {
-        //     abort(403, 'Anda tidak memiliki akses untuk menghapus alternatif ini.');
-        // }
         $alternatif->delete();
         return redirect()->route('alternatif.index')->with('success', 'Alternatif berhasil dihapus!');
     }

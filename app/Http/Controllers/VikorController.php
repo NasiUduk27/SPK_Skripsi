@@ -6,7 +6,7 @@ use App\Models\Alternatif;
 use App\Models\Kriteria;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\User; // Import model User untuk type hinting
+use App\Models\User; 
 
 class VikorController extends Controller
 {
@@ -23,9 +23,9 @@ class VikorController extends Controller
         $kriterias = Kriteria::all();
 
         if ($user->isAdmin()) {
-            $alternatifs = Alternatif::with('nilaiAlternatifs')->get(); // Admin melihat semua
+            $alternatifs = Alternatif::with('nilaiAlternatifs')->get();
         } else {
-            $alternatifs = $user->alternatifs()->with('nilaiAlternatifs')->get(); // User biasa hanya melihat miliknya
+            $alternatifs = $user->alternatifs()->with('nilaiAlternatifs')->get();
         }
 
         if ($kriterias->isEmpty() || $alternatifs->isEmpty()) {
@@ -45,7 +45,6 @@ class VikorController extends Controller
             }
         }
 
-        // --- Bagian perhitungan VIKOR (tetap sama seperti sebelumnya) ---
         // 1. Normalisasi Matriks (Fij, F*j, Fj-)
         $fStar = [];
         $fMinus = [];

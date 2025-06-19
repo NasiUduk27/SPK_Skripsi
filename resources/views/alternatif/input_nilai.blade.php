@@ -12,14 +12,6 @@
         <label for="nilai_{{ $kriteria->id }}" class="form-label">{{ $kriteria->nama_kriteria }} ({{ ucfirst($kriteria->tipe) }})</label>
         <select class="form-select @error('nilai_' . $kriteria->id) is-invalid @enderror" id="nilai_{{ $kriteria->id }}" name="nilai_{{ $kriteria->id }}" required>
             <option value="">Pilih Nilai</option>
-            {{--
-                Nilai (value) di sini adalah nilai numerik standar yang akan disimpan ke database
-                sesuai dengan kategori yang dipilih.
-                Contoh:
-                Rendah (1-4) -> value="2"
-                Sedang (5-7) -> value="6"
-                Tinggi (8-10) -> value="9"
-            --}}
             <option value="2" {{ old('nilai_' . $kriteria->id, $nilaiAlternatifs->get($kriteria->id)->nilai ?? '') == '2' ? 'selected' : '' }}>Rendah (1-4)</option>
             <option value="6" {{ old('nilai_' . $kriteria->id, $nilaiAlternatifs->get($kriteria->id)->nilai ?? '') == '6' ? 'selected' : '' }}>Sedang (5-7)</option>
             <option value="9" {{ old('nilai_' . $kriteria->id, $nilaiAlternatifs->get($kriteria->id)->nilai ?? '') == '9' ? 'selected' : '' }}>Tinggi (8-10)</option>

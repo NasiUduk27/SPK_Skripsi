@@ -17,10 +17,10 @@ return new class extends Migration
             $table->id();
             $table->foreignId('alternatif_id')->constrained('alternatifs')->onDelete('cascade');
             $table->foreignId('kriteria_id')->constrained('kriterias')->onDelete('cascade');
-            $table->double('nilai'); // Nilai alternatif pada kriteria tertentu
+            $table->double('nilai'); 
             $table->timestamps();
 
-            $table->unique(['alternatif_id', 'kriteria_id']); // Pastikan kombinasi ini unik
+            $table->unique(['alternatif_id', 'kriteria_id']);
         });
     }
 

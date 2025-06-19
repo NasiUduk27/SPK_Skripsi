@@ -4,8 +4,7 @@
 <div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
     <h1 class="h2">Daftar Alternatif</h1>
     <div class="btn-toolbar mb-2 mb-md-0">
-        {{-- Tombol Tambah Alternatif hanya untuk user biasa --}}
-        @if (Auth::user()->is_admin == 0) {{-- atau !Auth::user()->isAdmin() --}}
+        @if (Auth::user()->is_admin == 0)
             <a href="{{ route('alternatif.create') }}" class="btn btn-sm btn-outline-secondary">Tambah Alternatif</a>
         @endif
     </div>
@@ -24,7 +23,7 @@
             <tr>
                 <th>#</th>
                 <th>Nama Alternatif</th>
-                @if (Auth::user()->is_admin) {{-- Tambahkan kolom Pemilik hanya untuk Admin --}}
+                @if (Auth::user()->is_admin)
                     <th>Pemilik</th>
                 @endif
                 <th>Aksi</th>
@@ -36,7 +35,7 @@
                 <td>{{ $loop->iteration }}</td>
                 <td>{{ $alternatif->nama_alternatif }}</td>
                 @if (Auth::user()->is_admin)
-                    <td>{{ $alternatif->user->name ?? 'N/A' }}</td> {{-- Tampilkan nama pemilik --}}
+                    <td>{{ $alternatif->user->name ?? 'N/A' }}</td> 
                 @endif
                 <td>
                     <a href="{{ route('alternatif.show', $alternatif->id) }}" class="btn btn-primary btn-sm">Lihat</a>

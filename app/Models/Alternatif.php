@@ -10,7 +10,7 @@ class Alternatif extends Model
     use HasFactory;
 
     protected $fillable = [
-        'nama_alternatif', 'user_id' // Tambahkan user_id
+        'nama_alternatif', 'user_id'
     ];
 
     public function user()
@@ -22,8 +22,6 @@ class Alternatif extends Model
     {
         return $this->hasMany(NilaiAlternatif::class);
     }
-
-    // Metode helper untuk mendapatkan nilai kriteria tertentu
     public function getNilaiByKriteria($kriteria)
     {
         return $this->nilaiAlternatifs()->where('kriteria_id', $kriteria->id)->first();

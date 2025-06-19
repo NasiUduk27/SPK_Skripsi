@@ -10,17 +10,27 @@
     @method('PUT')
     <div class="mb-3">
         <label for="nama_kriteria" class="form-label">Nama Kriteria</label>
-        <input type="text" class="form-control @error('nama_kriteria') is-invalid @enderror" id="nama_kriteria" name="nama_kriteria" value="{{ old('nama_kriteria', $kriterium->nama_kriteria) }}" required>
+        @if (Auth::user()->isAdmin())
+            <input type="text" class="form-control @error('nama_kriteria') is-invalid @enderror" id="nama_kriteria" name="nama_kriteria" value="{{ old('nama_kriteria', $kriterium->nama_kriteria) }}" required>
+        @else
+            <input type="text" class="form-control" id="nama_kriteria" name="nama_kriteria" value="{{ $kriterium->nama_kriteria }}" readonly>
+            <input type="hidden" name="nama_kriteria" value="{{ $kriterium->nama_kriteria }}">
+        @endif
         @error('nama_kriteria')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
     </div>
     <div class="mb-3">
         <label for="tipe" class="form-label">Tipe Kriteria</label>
-        <select class="form-control @error('tipe') is-invalid @enderror" id="tipe" name="tipe" required>
-            <option value="benefit" {{ old('tipe', $kriterium->tipe) == 'benefit' ? 'selected' : '' }}>Benefit</option>
-            <option value="cost" {{ old('tipe', $kriterium->tipe) == 'cost' ? 'selected' : '' }}>Cost</option>
-        </select>
+        @if (Auth::user()->isAdmin())
+            <select class="form-control @error('tipe') is-invalid @enderror" id="tipe" name="tipe" required>
+                <option value="benefit" {{ old('tipe', $kriterium->tipe) == 'benefit' ? 'selected' : '' }}>Benefit</option>
+                <option value="cost" {{ old('tipe', $kriterium->tipe) == 'cost' ? 'selected' : '' }}>Cost</option>
+            </select>
+        @else
+            <input type="text" class="form-control" value="{{ ucfirst($kriterium->tipe) }}" readonly>
+            <input type="hidden" name="tipe" value="{{ $kriterium->tipe }}">
+        @endif
         @error('tipe')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror

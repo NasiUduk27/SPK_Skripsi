@@ -11,8 +11,8 @@ class Kriteria extends Model
 
     protected $fillable = [
         'nama_kriteria',
-        'tipe', // 'benefit' atau 'cost'
-        'bobot', // nilai 0-1
+        'tipe', 
+        'bobot',
     ];
 
     // Relasi balik ke NilaiAlternatif

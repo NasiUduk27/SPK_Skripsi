@@ -27,28 +27,21 @@ class NilaiAlternatif extends Model
         return $this->belongsTo(Kriteria::class);
     }
 
-    /**
-     * Accessor untuk mengkonversi nilai numerik standar ke kategori (Rendah, Sedang, Tinggi).
-     * Logika ini harus sesuai dengan 'value' yang digunakan di dropdown input.
-     */
     public function getKategoriNilaiAttribute()
     {
         $nilai = $this->attributes['nilai'];
 
-        if ($nilai == 2) { // Standar untuk Rendah (range 1-4)
+        if ($nilai == 2) {
             return 'Rendah (1-4)';
-        } elseif ($nilai == 6) { // Standar untuk Sedang (range 5-7)
+        } elseif ($nilai == 6) {
             return 'Sedang (5-7)';
-        } elseif ($nilai == 9) { // Standar untuk Tinggi (range 8-10)
+        } elseif ($nilai == 9) {
             return 'Tinggi (8-10)';
         } else {
-            return 'Tidak Valid'; // Jika ada nilai lain yang tersimpan (seharusnya tidak terjadi)
+            return 'Tidak Valid';
         }
     }
 
-    /**
-     * Accessor untuk mengkonversi nilai numerik standar menjadi rentang angka (jika ingin ditampilkan).
-     */
     public function getRangeAngkaAttribute()
     {
         $nilai = $this->attributes['nilai'];

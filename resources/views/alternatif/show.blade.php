@@ -30,9 +30,9 @@
                 <thead>
                     <tr>
                         <th>Kriteria</th>
-                        <th>Nilai Disimpan (Standar)</th> {{-- Nilai numerik standar yang tersimpan (2, 6, atau 9) --}}
-                        <th>Kategori</th> {{-- Kategori teks (Rendah, Sedang, Tinggi) --}}
-                        <th>Range Asal</th> {{-- Rentang angka asli (1-4, 5-7, 8-10) --}}
+                        <th>Nilai Disimpan (Standar)</th>
+                        <th>Kategori</th>
+                        <th>Range Asal</th>
                     </tr>
                 </thead>
                 <tbody>
@@ -45,21 +45,21 @@
                             @endphp
 
                             @if ($nilaiObj)
-                                {{ $nilaiObj->nilai }} {{-- Menampilkan nilai numerik standar --}}
+                                {{ $nilaiObj->nilai }}
                             @else
                                 Belum Diisi
                             @endif
                         </td>
                         <td>
                             @if ($nilaiObj)
-                                {{ $nilaiObj->kategori_nilai }} {{-- Menampilkan kategori dari accessor --}}
+                                {{ $nilaiObj->kategori_nilai }}
                             @else
                                 -
                             @endif
                         </td>
                         <td>
                             @if ($nilaiObj)
-                                {{ $nilaiObj->range_angka }} {{-- Menampilkan rentang angka dari accessor --}}
+                                {{ $nilaiObj->range_angka }} 
                             @else
                                 -
                             @endif

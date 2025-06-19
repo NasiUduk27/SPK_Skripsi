@@ -7,12 +7,12 @@
     <meta name="csrf-token" content="{{ csrf_token() }}">
     <title>{{ config('app.name', 'DSS VIKOR') }}</title>
 
-    <script src="{{ asset('/build/assets/app-f6a1f59b.js') }}" defer></script> {{-- Pastikan ini ada --}}
+    <script src="{{ asset('/build/assets/app-f6a1f59b.js') }}" defer></script>
 
     <link rel="dns-prefetch" href="//fonts.gstatic.com">
     <link href="https://fonts.googleapis.com/css?family=Nunito" rel="stylesheet">
 
-    <link href="{{ asset('/build/assets/app-2e4cd254.css') }}" rel="stylesheet"> {{-- Pastikan ini ada --}}
+    <link href="{{ asset('/build/assets/app-2e4cd254.css') }}" rel="stylesheet"> 
 </head>
 
 <body>
