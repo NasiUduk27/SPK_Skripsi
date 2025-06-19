@@ -34,7 +34,7 @@
                 <td>{{ ucfirst($kriteria->tipe) }}</td>
                 <td>{{ $kriteria->bobot }}</td>
                 <td>
-                    {{-- <a href="{{ route('kriteria.edit', $kriteria->id) }}" class="btn btn-info btn-sm">Edit</a> --}}
+                    <a href="{{ route('kriteria.edit', $kriteria->id) }}" class="btn btn-info btn-sm">Edit</a>
                     <form action="{{ route('kriteria.destroy', $kriteria->id) }}" method="POST" style="display:inline-block;">
                         @csrf
                         @method('DELETE')

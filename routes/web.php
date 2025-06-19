@@ -2,9 +2,9 @@
 
 use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
-use App\Http\Controllers\KriteriaController;
 use App\Http\Controllers\AlternatifController;
-use App\Http\Controllers\VikorController; // Nanti kita buat ini
+use App\Http\Controllers\KriteriaController;
+use App\Http\Controllers\VikorController; // Jangan lupa import
 use Illuminate\Support\Facades\Auth;
 
 /*
@@ -13,8 +13,8 @@ use Illuminate\Support\Facades\Auth;
 |--------------------------------------------------------------------------
 |
 | Here is where you can register web routes for your application. These
-| routes are loaded by the RouteServiceProvider and all of them will
-| be assigned to the "web" middleware group. Make something great!
+| routes are loaded by the RouteServiceProvider within a group which
+| contains the "web" middleware group. Now create something great!
 |
 */
 
@@ -26,13 +26,18 @@ Auth::routes();
 
 Route::get('/home', [HomeController::class, 'index'])->name('home');
 
-// Routes untuk Kriteria (butuh login)
-Route::resource('kriteria', KriteriaController::class)->middleware('auth');
+// Routes yang memerlukan otentikasi
+Route::middleware(['auth'])->group(function () {
+    // Resource route untuk Kriteria
+    Route::resource('kriteria', KriteriaController::class);
 
-// Routes untuk Alternatif (butuh login)
-Route::resource('alternatif', AlternatifController::class)->middleware('auth');
-Route::get('alternatif/{alternatif}/input-nilai', [AlternatifController::class, 'inputNilai'])->name('alternatif.inputNilai')->middleware('auth');
-Route::post('alternatif/{alternatif}/simpan-nilai', [AlternatifController::class, 'simpanNilai'])->name('alternatif.simpanNilai')->middleware('auth');
+    // Resource route untuk Alternatif
+    Route::resource('alternatif', AlternatifController::class);
 
-// Route untuk Perhitungan VIKOR (butuh login)
-Route::get('/vikor/hitung', [VikorController::class, 'hitung'])->name('vikor.hitung')->middleware('auth');
+    // Custom routes untuk input nilai alternatif
+    Route::get('alternatif/{alternatif}/input-nilai', [AlternatifController::class, 'inputNilai'])->name('alternatif.inputNilai');
+    Route::post('alternatif/{alternatif}/simpan-nilai', [AlternatifController::class, 'simpanNilai'])->name('alternatif.simpanNilai');
+
+    // Route untuk perhitungan VIKOR
+    Route::get('/vikor/hitung', [VikorController::class, 'hitung'])->name('vikor.hitung');
+});

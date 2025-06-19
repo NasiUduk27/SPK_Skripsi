@@ -11,14 +11,14 @@ return new class extends Migration
      *
      * @return void
      */
-    public function up()
+    public function up(): void
     {
         Schema::create('alternatifs', function (Blueprint $table) {
             $table->id();
             $table->string('nama_alternatif');
+            $table->foreignId('user_id')->constrained()->onDelete('cascade'); // Pastikan baris ini ada
             $table->timestamps();
         });
-
     }
 
     /**

@@ -19,7 +19,7 @@
             </div>
         @endif
 
-        {{-- 1. Data Input --}}
+        {{-- 1. Data Input (sama seperti sebelumnya) --}}
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-primary text-white">
                 <h3 class="card-title mb-0"><i class="fas fa-clipboard-list me-2"></i>Data Input</h3>
@@ -67,8 +67,18 @@
                                     @foreach ($alternatifs as $alternatif)
                                     <tr>
                                         <td>{{ $alternatif->nama_alternatif }}</td>
+                                        {{-- Gunakan accessor untuk menampilkan nilai dan kategori jika diperlukan --}}
                                         @foreach ($kriterias as $kriteria)
-                                            <td>{{ $alternatif->getNilaiByKriteria($kriteria)->nilai ?? '-' }}</td>
+                                            <td>
+                                                @php
+                                                    $nilaiObj = $alternatif->getNilaiByKriteria($kriteria);
+                                                @endphp
+                                                @if ($nilaiObj)
+                                                    {{ $nilaiObj->nilai }} ({{ $nilaiObj->kategori_nilai }})
+                                                @else
+                                                    -
+                                                @endif
+                                            </td>
                                         @endforeach
                                     </tr>
                                     @endforeach
@@ -80,7 +90,7 @@
             </div>
         </div>
 
-        {{-- 2. Nilai F* dan F- --}}
+        {{-- 2. Nilai F* dan F- (sama seperti sebelumnya) --}}
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-info text-white">
                 <h3 class="card-title mb-0"><i class="fas fa-calculator me-2"></i>Nilai F* dan F-</h3>
@@ -109,7 +119,7 @@
             </div>
         </div>
 
-        {{-- 3. Nilai Si dan Ri --}}
+        {{-- 3. Nilai Si dan Ri (sama seperti sebelumnya) --}}
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-success text-white">
                 <h3 class="card-title mb-0"><i class="fas fa-balance-scale me-2"></i>Nilai Si dan Ri</h3>
@@ -138,7 +148,7 @@
             </div>
         </div>
 
-        {{-- 4. Nilai Qi dan Ranking --}}
+        {{-- 4. Nilai Qi dan Ranking (sama seperti sebelumnya) --}}
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-warning text-dark">
                 <h3 class="card-title mb-0"><i class="fas fa-sort-numeric-down-alt me-2"></i>Nilai Qi dan Ranking</h3>
@@ -171,17 +181,27 @@
             </div>
         </div>
 
-        {{-- 5. Solusi Kompromi Terbaik --}}
+        {{-- 5. Solusi Kompromi Terbaik (Perubahan di sini) --}}
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-success text-white">
                 <h3 class="card-title mb-0"><i class="fas fa-trophy me-2"></i>Solusi Kompromi Terbaik</h3>
             </div>
             <div class="card-body">
                 @if ($kandidatTerbaik)
-                    <p class="lead">Alternatif terbaik adalah: <strong class="text-primary">{{ $kandidatTerbaik['alternatif'] ?? 'Belum terdefinisi' }}</strong> dengan nilai Qi = <strong class="text-success">{{ number_format($kandidatTerbaik['Qi'] ?? 0, 4) }}</strong></p>
+                    <p class="lead">Alternatif terbaik (Q terkecil): <strong class="text-primary">{{ $kandidatTerbaik['alternatif'] ?? 'Belum terdefinisi' }}</strong> dengan nilai Qi = <strong class="text-success">{{ number_format($kandidatTerbaik['Qi'] ?? 0, 4) }}</strong></p>
+
                     <p class="mb-2">Status Solusi: <span class="badge bg-secondary">{{ $kandidatTerbaik['status'] ?? 'Menunggu perhitungan' }}</span></p>
+
+                    @if (isset($kandidatTerbaik['set_solusi_kompromi']) && count($kandidatTerbaik['set_solusi_kompromi']) > 1)
+                        <p class="mb-2">Set Solusi Kompromi:
+                            @foreach ($kandidatTerbaik['set_solusi_kompromi'] as $solusi)
+                                <span class="badge bg-info text-dark">{{ $solusi }}</span>@if (!$loop->last),@endif
+                            @endforeach
+                        </p>
+                    @endif
+
                     @if (isset($DQ))
-                        <p class="mb-0">Nilai DQ (Threshold): <strong class="text-info">{{ number_format($DQ, 4) }}</strong></p>
+                        <p class="mb-0">Nilai DQ (Threshold untuk Kondisi 1): <strong class="text-info">{{ number_format($DQ, 4) }}</strong></p>
                     @endif
                 @else
                     <div class="alert alert-info mb-0" role="alert">

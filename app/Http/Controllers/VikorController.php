@@ -5,6 +5,8 @@ namespace App\Http\Controllers;
 use App\Models\Alternatif;
 use App\Models\Kriteria;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\Auth;
+use App\Models\User; // Import model User untuk type hinting
 
 class VikorController extends Controller
 {
@@ -15,45 +17,54 @@ class VikorController extends Controller
 
     public function hitung()
     {
-        $kriterias = Kriteria::all();
-        $alternatifs = Alternatif::with('nilaiAlternatifs')->get();
+        /** @var User $user */
+        $user = Auth::user();
 
-        if ($kriterias->isEmpty() || $alternatifs->isEmpty() || $alternatifs->first()->nilaiAlternatifs->isEmpty()) {
+        $kriterias = Kriteria::all();
+
+        if ($user->isAdmin()) {
+            $alternatifs = Alternatif::with('nilaiAlternatifs')->get(); // Admin melihat semua
+        } else {
+            $alternatifs = $user->alternatifs()->with('nilaiAlternatifs')->get(); // User biasa hanya melihat miliknya
+        }
+
+        if ($kriterias->isEmpty() || $alternatifs->isEmpty()) {
             return view('vikor.hasil', [
-                'error' => 'Data kriteria, alternatif, atau nilai alternatif belum lengkap. Harap lengkapi terlebih dahulu.'
+                'error' => 'Data kriteria atau alternatif belum lengkap. Harap lengkapi terlebih dahulu.'
             ]);
         }
 
+        foreach ($alternatifs as $alternatif) {
+            foreach ($kriterias as $kriteria) {
+                $nilai = $alternatif->getNilaiByKriteria($kriteria);
+                if (!$nilai) {
+                    return view('vikor.hasil', [
+                        'error' => 'Nilai untuk ' . $alternatif->nama_alternatif . ' pada kriteria ' . $kriteria->nama_kriteria . ' belum diinput. Harap lengkapi nilai semua alternatif untuk semua kriteria.'
+                    ]);
+                }
+            }
+        }
+
+        // --- Bagian perhitungan VIKOR (tetap sama seperti sebelumnya) ---
         // 1. Normalisasi Matriks (Fij, F*j, Fj-)
-        $matriksNormalisasi = [];
-        $fStar = []; // Nilai F*j (maksimum untuk Benefit, minimum untuk Cost)
-        $fMinus = []; // Nilai Fj- (minimum untuk Benefit, maksimum untuk Cost)
+        $fStar = [];
+        $fMinus = [];
 
         foreach ($kriterias as $kriteria) {
             $nilaiKriteria = [];
             foreach ($alternatifs as $alternatif) {
-                $nilai = $alternatif->getNilaiByKriteria($kriteria);
-                if ($nilai) {
-                    $nilaiKriteria[] = $nilai->nilai;
-                } else {
-                    return view('vikor.hasil', [
-                        'error' => 'Nilai untuk ' . $alternatif->nama_alternatif . ' pada kriteria ' . $kriteria->nama_kriteria . ' belum diinput.'
-                    ]);
-                }
+                $nilaiKriteria[] = $alternatif->getNilaiByKriteria($kriteria)->nilai;
             }
 
-            if (empty($nilaiKriteria)) {
-                return view('vikor.hasil', [
-                    'error' => 'Nilai kriteria ' . $kriteria->nama_kriteria . ' belum lengkap untuk semua alternatif.'
-                ]);
-            }
+            $minVal = min($nilaiKriteria);
+            $maxVal = max($nilaiKriteria);
 
             if ($kriteria->tipe == 'benefit') {
-                $fStar[$kriteria->id] = max($nilaiKriteria);
-                $fMinus[$kriteria->id] = min($nilaiKriteria);
+                $fStar[$kriteria->id] = $maxVal;
+                $fMinus[$kriteria->id] = $minVal;
             } else { // cost
-                $fStar[$kriteria->id] = min($nilaiKriteria);
-                $fMinus[$kriteria->id] = max($nilaiKriteria);
+                $fStar[$kriteria->id] = $minVal;
+                $fMinus[$kriteria->id] = $maxVal;
             }
         }
 
@@ -70,10 +81,15 @@ class VikorController extends Controller
                 $f_minus = $fMinus[$kriteria->id];
                 $bobot = $kriteria->bobot;
 
-                if (($f_star - $f_minus) == 0) {
-                    $norm_nilai = 0; // Hindari pembagian nol
+                $denominator = ($f_star - $f_minus);
+                if (abs($denominator) < 1e-9) {
+                    $norm_nilai = 0;
                 } else {
-                    $norm_nilai = ($f_star - $nilai) / ($f_star - $f_minus);
+                    if ($kriteria->tipe == 'benefit') {
+                        $norm_nilai = ($f_star - $nilai) / $denominator;
+                    } else {
+                        $norm_nilai = ($nilai - $f_minus) / $denominator;
+                    }
                 }
 
                 $s_val += $bobot * $norm_nilai;
@@ -84,26 +100,22 @@ class VikorController extends Controller
         }
 
         // 3. Hitung Qj
-        $sMin = min($Si);
-        $sMax = max($Si);
-        $rMin = min($Ri);
-        $rMax = max($Ri);
+        $sMin = (empty($Si)) ? 0 : min($Si);
+        $sMax = (empty($Si)) ? 0 : max($Si);
+        $rMin = (empty($Ri)) ? 0 : min($Ri);
+        $rMax = (empty($Ri)) ? 0 : max($Ri);
 
-        // Parameter V (Bobot strategi mayoritas/konsensus)
-        // Anda bisa membuat ini configurable di UI atau di .env
-        $v = 0.5; // Umumnya 0.5
+        $v = 0.5;
 
         $Qi = [];
         foreach ($alternatifs as $alternatif) {
-            if (($sMax - $sMin) == 0) { // Hindari pembagian nol
-                $qi_s = 0;
-            } else {
+            $qi_s = 0;
+            if (($sMax - $sMin) != 0) {
                 $qi_s = ($Si[$alternatif->id] - $sMin) / ($sMax - $sMin);
             }
 
-            if (($rMax - $rMin) == 0) { // Hindari pembagian nol
-                $qi_r = 0;
-            } else {
+            $qi_r = 0;
+            if (($rMax - $rMin) != 0) {
                 $qi_r = ($Ri[$alternatif->id] - $rMin) / ($rMax - $rMin);
             }
 
@@ -118,62 +130,70 @@ class VikorController extends Controller
                 'Si' => $Si[$alternatif->id],
                 'Ri' => $Ri[$alternatif->id],
                 'Qi' => $Qi[$alternatif->id],
-                'id' => $alternatif->id, // Tambahkan ID untuk referensi
+                'id' => $alternatif->id,
             ];
         }
 
-        // Urutkan berdasarkan nilai Qi (semakin kecil, semakin baik)
         usort($ranking, function ($a, $b) {
+            $tolerance = 1e-9;
+            if (abs($a['Qi'] - $b['Qi']) < $tolerance) {
+                return 0;
+            }
             return $a['Qi'] <=> $b['Qi'];
         });
 
-        // Kondisi Penerimaan (Opsional, tergantung implementasi VIKOR Anda)
-        // Kondisi 1: A1 lebih baik dari A2, dan Q(A2) - Q(A1) >= DQ
-        // DQ = 1 / (m-1) dimana m adalah jumlah alternatif
-        $m = count($alternatifs);
-        $DQ = ($m > 1) ? (1 / ($m - 1)) : 0; // Hindari pembagian nol
-
         $kandidatTerbaik = null;
+        $statusSolusi = 'Tidak dapat menentukan solusi kompromi.';
+
         if (count($ranking) > 0) {
             $kandidatTerbaik = $ranking[0];
 
+            $m = count($alternatifs);
+            $DQ = ($m > 1) ? (1 / ($m - 1)) : 0;
+
             if (count($ranking) > 1) {
-                $Q1 = $ranking[0]['Qi'];
-                $Q2 = $ranking[1]['Qi'];
+                $A1 = $ranking[0];
+                $A2 = $ranking[1];
 
-                // Kondisi 1: C1 = Q(A2) - Q(A1) >= DQ
-                $condition1 = ($Q2 - $Q1) >= $DQ;
+                $condition1 = (abs($A2['Qi'] - $A1['Qi']) >= $DQ);
 
-                // Kondisi 2: Stabilitas (A1 harus menjadi yang terbaik untuk S atau R)
-                $alternatif1 = Alternatif::find($ranking[0]['id']);
-                $alternatif2 = Alternatif::find($ranking[1]['id']);
+                $sSortedKeys = collect($Si)->sort()->keys()->toArray();
+                $rSortedKeys = collect($Ri)->sort()->keys()->toArray();
 
-                $sSorted = collect($Si)->sort()->keys()->toArray();
-                $rSorted = collect($Ri)->sort()->keys()->toArray();
+                $A1_id_from_db = $A1['id'];
 
-                $alternatif1IsBestForS = ($sSorted[0] == $alternatif1->id);
-                $alternatif1IsBestForR = ($rSorted[0] == $alternatif1->id);
+                $bestS_id = count($sSortedKeys) > 0 ? $sSortedKeys[0] : null;
+                $bestR_id = count($rSortedKeys) > 0 ? $rSortedKeys[0] : null;
 
-                $condition2 = ($alternatif1IsBestForS || $alternatif1IsBestForR);
-
+                $condition2 = ($bestS_id == $A1_id_from_db || $bestR_id == $A1_id_from_db);
 
                 if ($condition1 && $condition2) {
-                    $kandidatTerbaik['status'] = 'A1 adalah solusi kompromi terbaik.';
+                    $statusSolusi = 'A1 adalah solusi kompromi terbaik.';
                 } elseif (!$condition1) {
-                    $kandidatTerbaik['status'] = 'Tidak ada solusi kompromi yang stabil. Ada beberapa solusi setara.';
-                    // Biasanya, set solusi kompromi: A1, ..., Am' jika Q(Am') - Q(A1) < DQ
-                    // Implementasi ini bisa lebih kompleks jika Anda ingin menampilkan semua solusi setara
+                    $statusSolusi = 'Tidak ada solusi kompromi yang jelas. Alternatif ' . $A1['alternatif'] . ' dan ' . $A2['alternatif'] . ' (dan mungkin lainnya) adalah set solusi kompromi.';
+                    $setSolusiKompromi = [$A1['alternatif']];
+                    for ($i = 1; $i < count($ranking); $i++) {
+                        if (abs($ranking[$i]['Qi'] - $A1['Qi']) < $DQ) {
+                            $setSolusiKompromi[] = $ranking[$i]['alternatif'];
+                        } else {
+                            break;
+                        }
+                    }
+                    $kandidatTerbaik['set_solusi_kompromi'] = $setSolusiKompromi;
                 } elseif (!$condition2) {
-                    $kandidatTerbaik['status'] = 'Tidak ada solusi kompromi yang stabil. A1 tidak memenuhi kondisi stabilitas.';
+                    $statusSolusi = 'Tidak ada solusi kompromi yang stabil. Pilihan terbaik adalah set solusi kompromi { ' . $A1['alternatif'] . ', ' . $A2['alternatif'] . ' }.';
+                    $kandidatTerbaik['set_solusi_kompromi'] = [$A1['alternatif'], $A2['alternatif']];
                 } else {
-                    $kandidatTerbaik['status'] = 'Solusi kompromi ditemukan.';
+                    $statusSolusi = 'Solusi kompromi ditemukan.';
                 }
             } else {
-                $kandidatTerbaik['status'] = 'Hanya ada satu alternatif.';
+                $statusSolusi = 'Hanya ada satu alternatif yang tersedia.';
             }
         } else {
-            $kandidatTerbaik = ['status' => 'Tidak ada alternatif untuk dihitung.'];
+            $statusSolusi = 'Tidak ada alternatif untuk dihitung.';
         }
+
+        $kandidatTerbaik['status'] = $statusSolusi;
 
         return view('vikor.hasil', compact('kriterias', 'alternatifs', 'fStar', 'fMinus', 'Si', 'Ri', 'Qi', 'ranking', 'kandidatTerbaik', 'DQ'));
     }

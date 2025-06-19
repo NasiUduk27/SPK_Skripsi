@@ -6,6 +6,9 @@ use App\Models\Alternatif;
 use App\Models\Kriteria;
 use App\Models\NilaiAlternatif;
 use Illuminate\Http\Request;
+use Illuminate\Support\Facades\DB;
+use Illuminate\Support\Facades\Auth;
+use App\Models\User; // Import model User untuk type hinting
 
 class AlternatifController extends Controller
 {
@@ -16,7 +19,14 @@ class AlternatifController extends Controller
 
     public function index()
     {
-        $alternatifs = Alternatif::all();
+        /** @var User $user */ // Type hinting untuk autocomplete dan validasi
+        $user = Auth::user();
+
+        if ($user->isAdmin()) {
+            $alternatifs = Alternatif::all(); // Admin melihat semua alternatif
+        } else {
+            $alternatifs = $user->alternatifs; // User biasa hanya melihat alternatifnya sendiri
+        }
         return view('alternatif.index', compact('alternatifs'));
     }
 
@@ -28,16 +38,25 @@ class AlternatifController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nama_alternatif' => 'required|string|max:255|unique:alternatifs',
+            'nama_alternatif' => 'required|string|max:255|unique:alternatifs', // Unique across all users
         ]);
 
-        Alternatif::create($request->all());
+        Alternatif::create([
+            'nama_alternatif' => $request->nama_alternatif,
+            'user_id' => Auth::id(), // Otomatis mengaitkan alternatif dengan user yang sedang login
+        ]);
+
         return redirect()->route('alternatif.index')->with('success', 'Alternatif berhasil ditambahkan!');
     }
 
     public function show(Alternatif $alternatif)
     {
-        // Untuk menampilkan nilai-nilai alternatif pada kriteria
+        /** @var User $user */
+        $user = Auth::user();
+        // Hanya pemilik alternatif atau admin yang bisa melihat detail
+        if ($user->id !== $alternatif->user_id && !$user->isAdmin()) {
+            abort(403, 'Anda tidak memiliki akses ke alternatif ini.');
+        }
         $kriterias = Kriteria::all();
         $nilaiAlternatifs = $alternatif->nilaiAlternatifs->keyBy('kriteria_id');
         return view('alternatif.show', compact('alternatif', 'kriterias', 'nilaiAlternatifs'));
@@ -45,11 +64,23 @@ class AlternatifController extends Controller
 
     public function edit(Alternatif $alternatif)
     {
+        /** @var User $user */
+        $user = Auth::user();
+        // Hanya pemilik alternatif atau admin yang bisa mengedit
+        if ($user->id !== $alternatif->user_id && !$user->isAdmin()) {
+            abort(403, 'Anda tidak memiliki akses untuk mengedit alternatif ini.');
+        }
         return view('alternatif.edit', compact('alternatif'));
     }
 
     public function update(Request $request, Alternatif $alternatif)
     {
+        /** @var User $user */
+        $user = Auth::user();
+        // Hanya pemilik alternatif atau admin yang bisa update
+        if ($user->id !== $alternatif->user_id && !$user->isAdmin()) {
+            abort(403, 'Anda tidak memiliki akses untuk memperbarui alternatif ini.');
+        }
         $request->validate([
             'nama_alternatif' => 'required|string|max:255|unique:alternatifs,nama_alternatif,' . $alternatif->id,
         ]);
@@ -60,13 +91,21 @@ class AlternatifController extends Controller
 
     public function destroy(Alternatif $alternatif)
     {
-        $alternatif->delete(); // Otomatis menghapus nilai terkait karena cascade di migrasi
+        /** @var User $user */
+        $user = Auth::user();
+        // if ($user->id !== $alternatif->user_id && !$user->isAdmin()) {
+        //     abort(403, 'Anda tidak memiliki akses untuk menghapus alternatif ini.');
+        // }
+        $alternatif->delete();
         return redirect()->route('alternatif.index')->with('success', 'Alternatif berhasil dihapus!');
     }
-
-    // --- Metode untuk input nilai alternatif per kriteria ---
     public function inputNilai(Alternatif $alternatif)
     {
+        /** @var User $user */
+        $user = Auth::user();
+        if ($user->id !== $alternatif->user_id && !$user->isAdmin()) {
+            abort(403, 'Anda tidak memiliki akses untuk menginput nilai alternatif ini.');
+        }
         $kriterias = Kriteria::all();
         $nilaiAlternatifs = $alternatif->nilaiAlternatifs->keyBy('kriteria_id');
         return view('alternatif.input_nilai', compact('alternatif', 'kriterias', 'nilaiAlternatifs'));
@@ -74,25 +113,42 @@ class AlternatifController extends Controller
 
     public function simpanNilai(Request $request, Alternatif $alternatif)
     {
+        /** @var User $user */
+        $user = Auth::user();
+        if ($user->id !== $alternatif->user_id && !$user->isAdmin()) {
+            abort(403, 'Anda tidak memiliki akses untuk menyimpan nilai alternatif ini.');
+        }
         $kriterias = Kriteria::all();
         $rules = [];
         foreach ($kriterias as $kriteria) {
-            $rules['nilai_' . $kriteria->id] = 'required|numeric|min:0';
+            $rules['nilai_' . $kriteria->id] = 'required|in:2,6,9';
         }
         $request->validate($rules);
 
-        foreach ($kriterias as $kriteria) {
-            NilaiAlternatif::updateOrCreate(
-                [
-                    'alternatif_id' => $alternatif->id,
-                    'kriteria_id' => $kriteria->id,
-                ],
-                [
-                    'nilai' => $request->input('nilai_' . $kriteria->id)
-                ]
-            );
-        }
+        DB::beginTransaction();
 
-        return redirect()->route('alternatif.show', $alternatif)->with('success', 'Nilai alternatif berhasil disimpan!');
+        try {
+            foreach ($kriterias as $kriteria) {
+                NilaiAlternatif::updateOrCreate(
+                    [
+                        'alternatif_id' => $alternatif->id,
+                        'kriteria_id' => $kriteria->id,
+                    ],
+                    [
+                        'nilai' => $request->input('nilai_' . $kriteria->id)
+                    ]
+                );
+            }
+
+            DB::commit();
+
+            return redirect()->route('alternatif.show', $alternatif)
+                ->with('success', 'Nilai alternatif berhasil disimpan!');
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()
+                ->with('error', 'Gagal menyimpan nilai alternatif: ' . $e->getMessage())
+                ->withInput();
+        }
     }
 }
