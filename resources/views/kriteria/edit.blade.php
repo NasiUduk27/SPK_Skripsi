@@ -8,7 +8,7 @@
 <form action="{{ route('kriteria.update', $kriterium->id) }}" method="POST">
     @csrf
     @method('PUT')
-    {{-- <div class="mb-3">
+    <div class="mb-3">
         <label for="nama_kriteria" class="form-label">Nama Kriteria</label>
         <input type="text" class="form-control @error('nama_kriteria') is-invalid @enderror" id="nama_kriteria" name="nama_kriteria" value="{{ old('nama_kriteria', $kriterium->nama_kriteria) }}" required>
         @error('nama_kriteria')
@@ -24,7 +24,7 @@
         @error('tipe')
             <div class="invalid-feedback">{{ $message }}</div>
         @enderror
-    </div> --}}
+    </div>
     <div class="mb-3">
         <label for="bobot" class="form-label">Bobot (0-1)</label>
         <input type="number" step="0.01" class="form-control @error('bobot') is-invalid @enderror" id="bobot" name="bobot" value="{{ old('bobot', $kriterium->bobot) }}" required>
