@@ -4,7 +4,7 @@ use Illuminate\Support\Facades\Route;
 use App\Http\Controllers\HomeController;
 use App\Http\Controllers\AlternatifController;
 use App\Http\Controllers\KriteriaController;
-use App\Http\Controllers\VikorController; 
+use App\Http\Controllers\VikorController;
 use Illuminate\Support\Facades\Auth;
 
 /*
