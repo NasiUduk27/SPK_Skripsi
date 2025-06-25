@@ -6,7 +6,7 @@ use App\Models\Alternatif;
 use App\Models\Kriteria;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\Auth;
-use App\Models\User; 
+use App\Models\User;
 
 class VikorController extends Controller
 {
@@ -21,17 +21,24 @@ class VikorController extends Controller
         $user = Auth::user();
 
         $kriterias = Kriteria::all();
+        $totalBobot = $kriterias->sum('bobot');
+        $epsilon = 0.01;
+
+        if (!$user->isAdmin() && abs($totalBobot - 1.0) > $epsilon) {
+            return view('vikor.hasil', [
+                'error' => 'Total bobot kriteria saat ini adalah ' . number_format($totalBobot, 2) . '. Harap sesuaikan bobot kriteria agar totalnya tepat 1.0 sebelum melakukan perhitungan VIKOR.'
+            ]);
+        }
+        if ($kriterias->isEmpty() || ($user->isAdmin() ? Alternatif::count() == 0 : $user->alternatifs()->count() == 0)) {
+            return view('vikor.hasil', [
+                'error' => 'Data kriteria atau alternatif belum lengkap. Harap lengkapi terlebih dahulu.'
+            ]);
+        }
 
         if ($user->isAdmin()) {
             $alternatifs = Alternatif::with('nilaiAlternatifs')->get();
         } else {
             $alternatifs = $user->alternatifs()->with('nilaiAlternatifs')->get();
-        }
-
-        if ($kriterias->isEmpty() || $alternatifs->isEmpty()) {
-            return view('vikor.hasil', [
-                'error' => 'Data kriteria atau alternatif belum lengkap. Harap lengkapi terlebih dahulu.'
-            ]);
         }
 
         foreach ($alternatifs as $alternatif) {
@@ -61,7 +68,7 @@ class VikorController extends Controller
             if ($kriteria->tipe == 'benefit') {
                 $fStar[$kriteria->id] = $maxVal;
                 $fMinus[$kriteria->id] = $minVal;
-            } else { // cost
+            } else {
                 $fStar[$kriteria->id] = $minVal;
                 $fMinus[$kriteria->id] = $maxVal;
             }
@@ -143,6 +150,7 @@ class VikorController extends Controller
 
         $kandidatTerbaik = null;
         $statusSolusi = 'Tidak dapat menentukan solusi kompromi.';
+        $DQ = null;
 
         if (count($ranking) > 0) {
             $kandidatTerbaik = $ranking[0];
@@ -153,7 +161,6 @@ class VikorController extends Controller
             if (count($ranking) > 1) {
                 $A1 = $ranking[0];
                 $A2 = $ranking[1];
-
                 $condition1 = (abs($A2['Qi'] - $A1['Qi']) >= $DQ);
 
                 $sSortedKeys = collect($Si)->sort()->keys()->toArray();
