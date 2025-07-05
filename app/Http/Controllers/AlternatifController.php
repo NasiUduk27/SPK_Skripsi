@@ -8,7 +8,7 @@ use App\Models\NilaiAlternatif;
 use Illuminate\Http\Request;
 use Illuminate\Support\Facades\DB;
 use Illuminate\Support\Facades\Auth;
-use App\Models\User; // Import model User untuk type hinting
+use App\Models\User; 
 
 class AlternatifController extends Controller
 {
@@ -38,7 +38,7 @@ class AlternatifController extends Controller
     public function store(Request $request)
     {
         $request->validate([
-            'nama_alternatif' => 'required|string|max:255|unique:alternatifs',
+            'nama_alternatif' => 'required|string|max:255|unique:alternatifs,nama_alternatif,NULL,id,user_id,' . Auth::id(),
         ]);
 
         Alternatif::create([
@@ -78,8 +78,9 @@ class AlternatifController extends Controller
         if ($user->id !== $alternatif->user_id && !$user->isAdmin()) {
             abort(403, 'Anda tidak memiliki akses untuk memperbarui alternatif ini.');
         }
+        // Perbaikan di sini: Tambahkan user_id sebagai batasan unik dan kecualikan ID alternatif saat ini
         $request->validate([
-            'nama_alternatif' => 'required|string|max:255|unique:alternatifs,nama_alternatif,' . $alternatif->id,
+            'nama_alternatif' => 'required|string|max:255|unique:alternatifs,nama_alternatif,' . $alternatif->id . ',id,user_id,' . Auth::id(),
         ]);
 
         $alternatif->update($request->all());
@@ -90,6 +91,9 @@ class AlternatifController extends Controller
     {
         /** @var User $user */
         $user = Auth::user();
+        if ($user->id !== $alternatif->user_id && !$user->isAdmin()) {
+            abort(403, 'Anda tidak memiliki akses untuk menghapus alternatif ini.');
+        }
         $alternatif->delete();
         return redirect()->route('alternatif.index')->with('success', 'Alternatif berhasil dihapus!');
     }
