@@ -11,11 +11,9 @@ class Kriteria extends Model
 
     protected $fillable = [
         'nama_kriteria',
-        'tipe', 
+        'tipe',
         'bobot',
     ];
-
-    // Relasi balik ke NilaiAlternatif
     public function nilaiAlternatifs()
     {
         return $this->hasMany(NilaiAlternatif::class);

@@ -1,58 +1,59 @@
 @extends('layouts.app')
 
+@section('page_title', 'Kelola Alternatif')
+
 @section('content')
-<div class="d-flex justify-content-between flex-wrap flex-md-nowrap align-items-center pt-3 pb-2 mb-3 border-bottom">
-    <h1 class="h2">Daftar Alternatif</h1>
-    <div class="btn-toolbar mb-2 mb-md-0">
-        @if (Auth::user()->is_admin == 0)
-            <a href="{{ route('alternatif.create') }}" class="btn btn-sm btn-outline-secondary">Tambah Alternatif</a>
-        @endif
+<div class="card">
+    <div class="card-header pb-0">
+        <div class="d-flex justify-content-between align-items-center">
+            <h4 class="font-weight-bolder">Daftar Alternatif</h4>
+            <a href="{{ route('alternatif.create') }}" class="btn btn-primary">
+                <i class="fas fa-plus me-2"></i> Tambah Alternatif
+            </a>
+        </div>
     </div>
-</div>
+    <div class="card-body">
+        @if (session('success'))
+            <div class="alert alert-success text-white">{{ session('success') }}</div>
+        @endif
+        @if (session('error'))
+            <div class="alert alert-danger text-white">{{ session('error') }}</div>
+        @endif
 
-@if (session('success'))
-    <div class="alert alert-success">{{ session('success') }}</div>
-@endif
-@if (session('error'))
-    <div class="alert alert-danger">{{ session('error') }}</div>
-@endif
+        <div class="table-responsive">
+            <table class="table table-striped table-hover">
+                <thead class="table-dark">
+                    <tr>
+                        <th class="text-white">#</th>
+                        <th class="text-white">Nama Alternatif</th>
+                        <th class="text-white">Aksi</th>
+                    </tr>
+                </thead>
+                <tbody>
+                    @forelse ($alternatifs as $alternatif)
+                    <tr>
+                        <td>{{ $loop->iteration }}</td>
+                        <td>{{ $alternatif->nama_alternatif }}</td>
+                        <td>
+                            <a href="{{ route('alternatif.show', $alternatif->id) }}" class="btn btn-secondary btn-sm mb-0">Lihat Nilai</a>
 
-<div class="table-responsive">
-    <table class="table table-striped table-sm">
-        <thead>
-            <tr>
-                <th>#</th>
-                <th>Nama Alternatif</th>
-                @if (Auth::user()->is_admin)
-                    <th>Pemilik</th>
-                @endif
-                <th>Aksi</th>
-            </tr>
-        </thead>
-        <tbody>
-            @forelse ($alternatifs as $alternatif)
-            <tr>
-                <td>{{ $loop->iteration }}</td>
-                <td>{{ $alternatif->nama_alternatif }}</td>
-                @if (Auth::user()->is_admin)
-                    <td>{{ $alternatif->user->name ?? 'N/A' }}</td> 
-                @endif
-                <td>
-                    <a href="{{ route('alternatif.show', $alternatif->id) }}" class="btn btn-primary btn-sm">Lihat</a>
-                    <a href="{{ route('alternatif.edit', $alternatif->id) }}" class="btn btn-info btn-sm">Edit</a>
-                    <form action="{{ route('alternatif.destroy', $alternatif->id) }}" method="POST" style="display:inline-block;">
-                        @csrf
-                        @method('DELETE')
-                        <button type="submit" class="btn btn-danger btn-sm" onclick="return confirm('Anda yakin ingin menghapus alternatif ini?')">Hapus</button>
-                    </form>
-                </td>
-            </tr>
-            @empty
-            <tr>
-                <td colspan="{{ Auth::user()->is_admin ? '3' : '2' }}">Tidak ada alternatif.</td>
-            </tr>
-            @endforelse
-        </tbody>
-    </table>
+                            <a href="{{ route('alternatif.inputNilai', $alternatif->id) }}" class="btn btn-info btn-sm mb-0">Input Nilai</a>
+                            <a href="{{ route('alternatif.edit', $alternatif->id) }}" class="btn btn-warning btn-sm mb-0">Edit Nama</a>
+                            <form action="{{ route('alternatif.destroy', $alternatif->id) }}" method="POST" style="display:inline-block;">
+                                @csrf
+                                @method('DELETE')
+                                <button type="submit" class="btn btn-danger btn-sm mb-0" onclick="return confirm('Anda yakin ingin menghapus alternatif ini?')">Hapus</button>
+                            </form>
+                        </td>
+                    </tr>
+                    @empty
+                    <tr>
+                        <td colspan="3" class="text-center">Tidak ada alternatif. Silakan tambahkan alternatif baru.</td>
+                    </tr>
+                    @endforelse
+                </tbody>
+            </table>
+        </div>
+    </div>
 </div>
 @endsection

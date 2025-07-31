@@ -15,39 +15,6 @@
           </div>
         </div>
         <ul class="navbar-nav justify-content-end">
-          <li class="nav-item dropdown d-flex align-items-center me-2">
-            <a href="javascript:;" class="nav-link text-body font-weight-bold px-0" id="navbarDropdownUser" role="button" data-bs-toggle="dropdown" aria-expanded="false">
-              <i class="fa fa-user me-sm-1"></i>
-              <span class="d-sm-inline d-none">{{ Auth::user()->name ?? 'Guest' }}</span>
-            </a>
-            <ul class="dropdown-menu dropdown-menu-end px-2 py-3 me-sm-n4" aria-labelledby="navbarDropdownUser">
-              <li>
-                <a class="dropdown-item border-radius-md" href="#">
-                  <div class="d-flex py-1">
-                    <div class="d-flex flex-column justify-content-center">
-                      <h6 class="text-sm font-weight-normal mb-1">
-                        <i class="fas fa-user-circle me-1"></i> Profil Saya
-                      </h6>
-                    </div>
-                  </div>
-                </a>
-              </li>
-              <li>
-                <a class="dropdown-item border-radius-md" href="#" onclick="event.preventDefault(); document.getElementById('logout-form').submit();">
-                  <div class="d-flex py-1">
-                    <div class="d-flex flex-column justify-content-center">
-                      <h6 class="text-sm font-weight-normal mb-1">
-                        <i class="fas fa-sign-out-alt me-1"></i> Log Out
-                      </h6>
-                    </div>
-                  </div>
-                </a>
-                <form id="logout-form" action="{{ route('logout') }}" method="POST" class="d-none">
-                    @csrf
-                </form>
-              </li>
-            </ul>
-          </li>
           <li class="nav-item d-xl-none ps-3 d-flex align-items-center">
             <a href="javascript:;" class="nav-link text-body p-0" id="iconNavbarSidenav">
               <div class="sidenav-toggler-inner">
@@ -60,4 +27,4 @@
         </ul>
       </div>
     </div>
-  </nav>
+</nav>
