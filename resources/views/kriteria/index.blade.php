@@ -1,61 +1,39 @@
 @extends('layouts.app')
 
-@section('page_title', 'Kelola Kriteria')
+@section('page_title', 'Langkah 1: Tentukan Kriteria')
 
 @section('content')
-<div class="card">
-    <div class="card-header pb-0">
-        <div class="d-flex justify-content-between align-items-center">
-            <h4 class="font-weight-bolder">Daftar Kriteria</h4>
-            {{-- Tombol untuk menambah kriteria baru --}}
-            <a href="{{ route('kriteria.create') }}" class="btn btn-primary">
-                <i class="fas fa-plus me-2"></i> Tambah Kriteria
-            </a>
+<form action="{{ route('kriteria.prosesPemilihan') }}" method="POST">
+    @csrf
+    <div class="card">
+        <div class="card-header pb-0">
+            <h4 class="font-weight-bolder">Tentukan Kriteria</h4>
+            <p class="mb-0">Centang kriteria yang ingin Anda gunakan dalam perhitungan (minimal 2).</p>
         </div>
-    </div>
-    <div class="card-body">
-        @if (session('success'))
-            <div class="alert alert-success text-white">{{ session('success') }}</div>
-        @endif
-        @if (session('error'))
-            <div class="alert alert-danger text-white">{{ session('error') }}</div>
-        @endif
+        <div class="card-body">
+            @if(session('error'))
+                <div class="alert alert-danger text-white">{{ session('error') }}</div>
+            @endif
+            @if ($errors->any())
+                <div class="alert alert-danger text-white">
+                    {{ $errors->first() }}
+                </div>
+            @endif
 
-        <div class="table-responsive">
-            <table class="table table-striped table-hover">
-                <thead class="table-dark">
-                    <tr>
-                        <th class="text-white">#</th>
-                        <th class="text-white">Nama Kriteria</th>
-                        <th class="text-white">Tipe</th>
-                        <th class="text-white">Bobot Relatif</th>
-                        <th class="text-white">Aksi</th>
-                    </tr>
-                </thead>
-                <tbody>
-                    @forelse ($kriterias as $kriteria)
-                    <tr>
-                        <td>{{ $loop->iteration }}</td>
-                        <td>{{ $kriteria->nama_kriteria }}</td>
-                        <td>{{ ucfirst($kriteria->tipe) }}</td>
-                        <td>{{ $kriteria->bobot }}</td>
-                        <td>
-                            <a href="{{ route('kriteria.edit', $kriteria->id) }}" class="btn btn-warning btn-sm mb-0">Edit</a>
-                            <form action="{{ route('kriteria.destroy', $kriteria->id) }}" method="POST" style="display:inline-block;">
-                                @csrf
-                                @method('DELETE')
-                                <button type="submit" class="btn btn-danger btn-sm mb-0" onclick="return confirm('Anda yakin ingin menghapus kriteria ini?')">Hapus</button>
-                            </form>
-                        </td>
-                    </tr>
-                    @empty
-                    <tr>
-                        <td colspan="5" class="text-center">Tidak ada kriteria. Silakan tambahkan kriteria baru.</td>
-                    </tr>
-                    @endforelse
-                </tbody>
-            </table>
+            <div class="list-group">
+                @foreach ($kriterias as $kriteria)
+                <label class="list-group-item border-radius-lg">
+                    <input class="form-check-input me-2" type="checkbox" name="kriteria_ids[]" value="{{ $kriteria->id }}">
+                    {{ $kriteria->nama_kriteria }} ({{ ucfirst($kriteria->tipe) }})
+                </label>
+                @endforeach
+            </div>
+        </div>
+        <div class="card-footer text-end">
+            <button type="submit" class="btn btn-primary">
+                Simpan Pilihan & Lanjutkan ke Langkah 2 <i class="fas fa-arrow-right ms-2"></i>
+            </button>
         </div>
     </div>
-</div>
+</form>
 @endsection

@@ -7,7 +7,7 @@
     <div class="col-12">
         <div class="card mb-4">
             <div class="card-body text-center p-5">
-                <h1 class="font-weight-bolder">Selamat Datang di Sistem Pendukung Keputusan (SPK)</h1>
+                <h1 class="font-weight-bolder">Sistem Pendukung Keputusan Penentuan Jenis Usaha</h1>
                 <p class="lead">Temukan jenis usaha terbaik untuk Anda dengan metode VIKOR melalui 3 langkah mudah.</p>
             </div>
         </div>

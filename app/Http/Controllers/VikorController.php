@@ -8,18 +8,18 @@ use Illuminate\Http\Request;
 
 class VikorController extends Controller
 {
-    public function pilihKriteria()
+    public function pilihKriteria(Request $request)
     {
-        $kriterias = Kriteria::orderBy('nama_kriteria', 'asc')->get();
+        $selectedIds = $request->session()->get('selected_kriteria_ids');
+        if (!$selectedIds) {
+            return redirect()->route('kriteria.index')->with('error', 'Silakan pilih kriteria terlebih dahulu.');
+        }
+        $kriterias = Kriteria::whereIn('id', $selectedIds)->orderBy('nama_kriteria', 'asc')->get();
         return view('vikor.pilih-kriteria', compact('kriterias'));
     }
 
     public function hitung(Request $request)
     {
-        // =======================================================================
-        // LANGKAH 1: VALIDASI DAN PERSIAPAN KRITERIA DINAMIS
-        // =======================================================================
-
         $request->validate([
             'kriteria_ids' => 'required|array|min:2',
             'kriteria_ids.*' => 'exists:kriterias,id',
@@ -34,10 +34,6 @@ class VikorController extends Controller
             'prioritas.distinct' => 'Setiap kriteria harus memiliki nomor prioritas yang unik.'
         ]);
 
-        // =======================================================================
-        // LANGKAH 2: PERSIAPAN KRITERIA DAN PEMBOBOTAN
-        // =======================================================================
-
         $selectedKriteriaIds = $request->input('kriteria_ids');
         $kriterias = Kriteria::whereIn('id', $selectedKriteriaIds)->get();
 
@@ -51,16 +47,11 @@ class VikorController extends Controller
             $prioritas = $request->input('prioritas');
             $n = count($prioritas);
             $sum_of_ranks = $n * ($n + 1) / 2;
-
             $kriterias->each(function ($kriteria) use ($prioritas, $n, $sum_of_ranks) {
                 $rank = $prioritas[$kriteria->id];
                 $kriteria->bobot_normalisasi = ($n - $rank + 1) / $sum_of_ranks;
             });
         }
-
-        // =======================================================================
-        // LANGKAH 3: PROSES PERHITUNGAN VIKOR
-        // =======================================================================
 
         $alternatifs = Alternatif::with(['nilaiAlternatifs' => function ($query) use ($selectedKriteriaIds) {
             $query->whereIn('kriteria_id', $selectedKriteriaIds);
@@ -78,7 +69,6 @@ class VikorController extends Controller
             }
         }
 
-        // 4. Hitung F* (Nilai Ideal Positif) dan F-
         $fStar = [];
         $fMinus = [];
         foreach ($kriterias as $kriteria) {
@@ -86,13 +76,12 @@ class VikorController extends Controller
             if ($kriteria->tipe == 'benefit') {
                 $fStar[$kriteria->id] = $nilaiList->max();
                 $fMinus[$kriteria->id] = $nilaiList->min();
-            } else { // 'cost'
+            } else {
                 $fStar[$kriteria->id] = $nilaiList->min();
                 $fMinus[$kriteria->id] = $nilaiList->max();
             }
         }
 
-        // 5. Hitung Nilai Si (Utility Measure) dan Ri (Regret Measure)
         $Si = [];
         $Ri = [];
         foreach ($alternatifs as $alternatif) {
@@ -115,7 +104,6 @@ class VikorController extends Controller
             $Ri[$alternatif->id] = max($r_val_list);
         }
 
-        // 6. Hitung Qi (VIKOR Index)
         $sMin = min($Si);
         $sMax = max($Si);
         $rMin = min($Ri);
@@ -132,7 +120,6 @@ class VikorController extends Controller
             $Qi[$id] = ($v * $qi_s) + ((1 - $v) * $qi_r);
         }
 
-        // 7. Perangkingan
         $ranking = collect($alternatifs)->map(function ($alt) use ($Si, $Ri, $Qi) {
             return [
                 'id' => $alt->id,
@@ -143,7 +130,6 @@ class VikorController extends Controller
             ];
         })->sortBy('Qi')->values()->all();
 
-        // 8. Penentuan Solusi Kompromi
         $kandidatTerbaik = $ranking[0] ?? null;
         $DQ = (count($alternatifs) > 1) ? (1 / (count($alternatifs) - 1)) : 0;
 
@@ -162,7 +148,7 @@ class VikorController extends Controller
                 } elseif (!$condition1) {
                     $statusSolusi = 'Solusi kompromi tidak jelas (Kondisi 1 tidak terpenuhi).';
                     $kandidatTerbaik['set_solusi_kompromi'] = collect($ranking)->filter(fn($r) => abs($r['Qi'] - $A1['Qi']) < $DQ)->pluck('alternatif')->unique()->values()->all();
-                } else { 
+                } else {
                     $statusSolusi = 'Solusi kompromi tidak stabil (Kondisi 2 tidak terpenuhi).';
                     $kandidatTerbaik['set_solusi_kompromi'] = [$A1['alternatif'], $A2['alternatif']];
                 }
@@ -170,7 +156,6 @@ class VikorController extends Controller
             $kandidatTerbaik['status'] = $statusSolusi;
         }
 
-        // 9. Tampilkan hasil ke view vikor.hasil
         return view('vikor.hasil', compact(
             'kriterias', 'alternatifs', 'fStar', 'fMinus', 'Si', 'Ri', 'Qi', 'ranking', 'kandidatTerbaik', 'DQ'
         ));

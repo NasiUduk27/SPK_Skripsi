@@ -10,11 +10,48 @@ use Illuminate\Support\Facades\DB;
 
 class AlternatifController extends Controller
 {
-
-    public function index()
+    public function index(Request $request)
     {
-        $alternatifs = Alternatif::orderBy('nama_alternatif', 'asc')->get();
-        return view('alternatif.index', compact('alternatifs'));
+        $selectedIds = $request->session()->get('selected_kriteria_ids');
+        if (!$selectedIds) {
+            return redirect()->route('kriteria.index')->with('error', 'Silakan tentukan kriteria terlebih dahulu sebelum mengelola alternatif.');
+        }
+        $kriterias = Kriteria::whereIn('id', $selectedIds)->get();
+        $alternatifs = Alternatif::with(['nilaiAlternatifs' => function ($query) use ($selectedIds) {
+            $query->whereIn('kriteria_id', $selectedIds);
+        }])->orderBy('nama_alternatif', 'asc')->get();
+        return view('alternatif.index', compact('alternatifs', 'kriterias'));
+    }
+
+    public function simpanDanLanjutkan(Request $request)
+    {
+        $request->validate([
+            'nilai' => 'required|array',
+            'nilai.*.*' => 'required|numeric'
+        ], [
+            'nilai.*.*.required' => 'Semua nilai kriteria wajib diisi sebelum melanjutkan ke perhitungan.'
+        ]);
+
+        $allNilai = $request->input('nilai');
+
+        DB::beginTransaction();
+        try {
+            foreach ($allNilai as $alternatif_id => $kriteria_values) {
+                foreach ($kriteria_values as $kriteria_id => $nilai) {
+                    NilaiAlternatif::updateOrCreate(
+                        ['alternatif_id' => $alternatif_id, 'kriteria_id' => $kriteria_id],
+                        ['nilai' => $nilai]
+                    );
+                }
+            }
+            DB::commit();
+
+            return redirect()->route('vikor.pilih')->with('success', 'Semua nilai berhasil disimpan! Sekarang, tentukan metode pembobotan.');
+
+        } catch (\Exception $e) {
+            DB::rollBack();
+            return redirect()->back()->with('error', 'Gagal menyimpan nilai: ' . $e->getMessage());
+        }
     }
 
     public function create()
@@ -24,20 +61,9 @@ class AlternatifController extends Controller
 
     public function store(Request $request)
     {
-        $request->validate([
-            'nama_alternatif' => 'required|string|max:255|unique:alternatifs,nama_alternatif',
-        ]);
-
+        $request->validate(['nama_alternatif' => 'required|string|max:255|unique:alternatifs,nama_alternatif']);
         Alternatif::create($request->only('nama_alternatif'));
-
-        return redirect()->route('alternatif.index')->with('success', 'Alternatif berhasil ditambahkan!');
-    }
-
-    public function show(Alternatif $alternatif)
-    {
-        $kriterias = Kriteria::all();
-        $nilaiAlternatifs = $alternatif->nilaiAlternatifs->keyBy('kriteria_id');
-        return view('alternatif.show', compact('alternatif', 'kriterias', 'nilaiAlternatifs'));
+        return redirect()->route('alternatif.index')->with('success', 'Alternatif baru berhasil ditambahkan! Silakan isi nilainya di bawah.');
     }
 
     public function edit(Alternatif $alternatif)
@@ -47,59 +73,14 @@ class AlternatifController extends Controller
 
     public function update(Request $request, Alternatif $alternatif)
     {
-        $request->validate([
-            'nama_alternatif' => 'required|string|max:255|unique:alternatifs,nama_alternatif,' . $alternatif->id,
-        ]);
-
+        $request->validate(['nama_alternatif' => 'required|string|max:255|unique:alternatifs,nama_alternatif,' . $alternatif->id]);
         $alternatif->update($request->only('nama_alternatif'));
-        return redirect()->route('alternatif.index')->with('success', 'Alternatif berhasil diperbarui!');
+        return redirect()->route('alternatif.index')->with('success', 'Nama alternatif berhasil diperbarui!');
     }
 
     public function destroy(Alternatif $alternatif)
     {
         $alternatif->delete();
         return redirect()->route('alternatif.index')->with('success', 'Alternatif berhasil dihapus!');
-    }
-
-    public function inputNilai(Alternatif $alternatif)
-    {
-        $kriterias = Kriteria::all();
-        $nilaiAlternatifs = $alternatif->nilaiAlternatifs->keyBy('kriteria_id');
-        return view('alternatif.input_nilai', compact('alternatif', 'kriterias', 'nilaiAlternatifs'));
-    }
-
-    public function simpanNilai(Request $request, Alternatif $alternatif)
-    {
-        $kriterias = Kriteria::all();
-        $rules = [];
-        foreach ($kriterias as $kriteria) {
-            $rules['nilai_' . $kriteria->id] = 'required|numeric';
-        }
-        $request->validate($rules);
-
-        DB::beginTransaction();
-        try {
-            foreach ($kriterias as $kriteria) {
-                NilaiAlternatif::updateOrCreate(
-                    [
-                        'alternatif_id' => $alternatif->id,
-                        'kriteria_id' => $kriteria->id,
-                    ],
-                    [
-                        'nilai' => $request->input('nilai_' . $kriteria->id)
-                    ]
-                );
-            }
-            DB::commit();
-
-            // PERUBAHAN DI SINI: Redirect ke halaman daftar alternatif (index)
-            return redirect()->route('alternatif.index')
-                ->with('success', 'Nilai untuk alternatif "' . $alternatif->nama_alternatif . '" berhasil disimpan!');
-        } catch (\Exception $e) {
-            DB::rollBack();
-            return redirect()->back()
-                ->with('error', 'Gagal menyimpan nilai alternatif: ' . $e->getMessage())
-                ->withInput();
-        }
     }
 }
