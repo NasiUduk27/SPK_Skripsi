@@ -1,6 +1,9 @@
 @extends('layouts.app')
 
 @section('page_title', 'Langkah 2: Kelola Alternatif & Nilai')
+@push('styles')
+<link rel="stylesheet" href="https://cdn.jsdelivr.net/npm/sweetalert2@11/dist/sweetalert2.min.css">
+@endpush
 
 @section('content')
 <div class="row">
@@ -53,7 +56,7 @@
                                                 <i class="fas fa-edit me-1"></i> Edit Nama
                                             </a>
                                             <button type="button" class="btn btn-danger btn-sm mb-0"
-                                                    onclick="if(confirm('Anda yakin ingin menghapus alternatif ini?')) { document.getElementById('delete-form-{{ $alternatif->id }}').submit(); }"
+                                                    onclick="confirmDelete('{{ $alternatif->id }}', '{{ $alternatif->nama_alternatif }}')"
                                                     title="Hapus">
                                                 <i class="fas fa-trash me-1"></i> Hapus
                                             </button>
@@ -104,3 +107,25 @@
     </div>
 </div>
 @endsection
+
+@push('scripts')
+<script src="https://cdn.jsdelivr.net/npm/sweetalert2@11"></script>
+<script>
+    function confirmDelete(id, name) {
+        Swal.fire({
+            title: 'Anda Yakin?',
+            html: `Anda akan menghapus alternatif: <br><strong>${name}</strong>`,
+            icon: 'warning',
+            showCancelButton: true,
+            confirmButtonColor: '#3085d6',
+            cancelButtonColor: '#d33',
+            confirmButtonText: 'Ya, Hapus!',
+            cancelButtonText: 'Batal'
+        }).then((result) => {
+            if (result.isConfirmed) {
+                document.getElementById('delete-form-' + id).submit();
+            }
+        })
+    }
+</script>
+@endpush
