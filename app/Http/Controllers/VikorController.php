@@ -44,12 +44,25 @@ class VikorController extends Controller
                 $kriteria->bobot_normalisasi = $bobot;
             });
         } else {
+
             $prioritas = $request->input('prioritas');
-            $n = count($prioritas);
-            $sum_of_ranks = $n * ($n + 1) / 2;
-            $kriterias->each(function ($kriteria) use ($prioritas, $n, $sum_of_ranks) {
+            $n = $kriterias->count();
+
+            $roc_weights = [];
+            for ($j = 1; $j <= $n; $j++) {
+                $sum_inv_k = 0;
+                for ($k = $j; $k <= $n; $k++) {
+                    $sum_inv_k += 1 / $k;
+                }
+                $roc_weights[$j] = (1 / $n) * $sum_inv_k;
+            }
+
+
+            $kriterias->each(function ($kriteria) use ($prioritas, $roc_weights) {
+                // Ambil peringkat (rank) dari kriteria ini, contoh: 1, 2, 3...
                 $rank = $prioritas[$kriteria->id];
-                $kriteria->bobot_normalisasi = ($n - $rank + 1) / $sum_of_ranks;
+
+                $kriteria->bobot_normalisasi = $roc_weights[$rank] ?? 0;
             });
         }
 
@@ -69,6 +82,7 @@ class VikorController extends Controller
             }
         }
 
+        // Hitung F* (Nilai Ideal Positif) dan F-
         $fStar = [];
         $fMinus = [];
         foreach ($kriterias as $kriteria) {
@@ -76,12 +90,13 @@ class VikorController extends Controller
             if ($kriteria->tipe == 'benefit') {
                 $fStar[$kriteria->id] = $nilaiList->max();
                 $fMinus[$kriteria->id] = $nilaiList->min();
-            } else {
+            } else { // 'cost'
                 $fStar[$kriteria->id] = $nilaiList->min();
                 $fMinus[$kriteria->id] = $nilaiList->max();
             }
         }
 
+        // Hitung Nilai Si (Utility Measure) dan Ri (Regret Measure)
         $Si = [];
         $Ri = [];
         foreach ($alternatifs as $alternatif) {
@@ -104,6 +119,7 @@ class VikorController extends Controller
             $Ri[$alternatif->id] = max($r_val_list);
         }
 
+        // Hitung Qi (VIKOR Index)
         $sMin = min($Si);
         $sMax = max($Si);
         $rMin = min($Ri);
@@ -120,6 +136,7 @@ class VikorController extends Controller
             $Qi[$id] = ($v * $qi_s) + ((1 - $v) * $qi_r);
         }
 
+        // Perangkingan
         $ranking = collect($alternatifs)->map(function ($alt) use ($Si, $Ri, $Qi) {
             return [
                 'id' => $alt->id,
