@@ -20,7 +20,7 @@
     @else
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-dark text-white">
-                <h3 class="card-title mb-0"><i class="fas fa-clipboard-list me-2"></i>1. Data Input yang Digunakan</h3>
+                <h3 class="card-title mb-0"></i>1. Data Input yang Digunakan</h3>
             </div>
             <div class="card-body">
                 <div class="row">
@@ -83,7 +83,7 @@
         </div>
         <div class="card shadow-sm mb-4">
              <div class="card-header bg-dark text-white">
-                <h3 class="card-title mb-0"><i class="fas fa-star me-2"></i>2. Nilai Ideal Positif (F*) & Negatif (F-)</h3>
+                <h3 class="card-title mb-0">2. Nilai Ideal Positif (F*) & Negatif (F-)</h3>
             </div>
             <div class="card-body">
                  <div class="table-responsive">
@@ -116,7 +116,7 @@
         </div>
         <div class="card shadow-sm mb-4">
              <div class="card-header bg-dark text-white">
-                <h3 class="card-title mb-0"><i class="fas fa-balance-scale me-2"></i>3. Nilai Utility (S) & Regret (R)</h3>
+                <h3 class="card-title mb-0"></i>3. Nilai Utility (S) & Regret (R)</h3>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -143,7 +143,7 @@
         </div>
         <div class="card shadow-sm mb-4">
             <div class="card-header bg-dark text-white">
-                <h3 class="card-title mb-0"><i class="fas fa-sort-numeric-down-alt me-2"></i>4. Perankingan Indeks VIKOR (Q)</h3>
+                <h3 class="card-title mb-0"></i>4. Perankingan Indeks VIKOR (Q)</h3>
             </div>
             <div class="card-body">
                 <div class="table-responsive">
@@ -174,7 +174,7 @@
         </div>
         <div class="card shadow-sm">
             <div class="card-header bg-primary text-white">
-                <h3 class="card-title mb-0"><i class="fas fa-trophy me-2"></i>5. Solusi Kompromi</h3>
+                <h3 class="card-title mb-0"></i>5. Solusi Kompromi</h3>
             </div>
             <div class="card-body">
                 @if ($kandidatTerbaik)

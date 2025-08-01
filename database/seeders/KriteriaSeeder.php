@@ -9,33 +9,73 @@ use App\Models\Kriteria;
 class KriteriaSeeder extends Seeder
 {
     /**
-     * Run the database seeds.
+     * Menjalankan proses seeding untuk database.
+     * Latar belakang kriteria ini didasarkan pada analisis kelayakan bisnis umum
+     * yang relevan untuk usaha skala kecil hingga menengah.
      *
      * @return void
      */
     public function run()
     {
-        // Mengosongkan tabel kriteria sebelum diisi ulang
         DB::statement('SET FOREIGN_KEY_CHECKS=0;');
         DB::table('kriterias')->truncate();
         DB::statement('SET FOREIGN_KEY_CHECKS=1;');
 
         $kriterias = [
-            // 8 Kriteria Tipe Benefit
-            ['nama_kriteria' => 'Potensi Keuntungan', 'tipe' => 'benefit', 'bobot' => 30],
-            ['nama_kriteria' => 'Tingkat Permintaan Pasar', 'tipe' => 'benefit', 'bobot' => 30],
-            ['nama_kriteria' => 'Keberlanjutan Usaha', 'tipe' => 'benefit', 'bobot' => 20],
-            ['nama_kriteria' => 'Kemudahan Pemasaran', 'tipe' => 'benefit', 'bobot' => 20],
-            ['nama_kriteria' => 'Ketersediaan Bahan Baku', 'tipe' => 'benefit', 'bobot' => 15],
-            ['nama_kriteria' => 'Fleksibilitas Waktu', 'tipe' => 'benefit', 'bobot' => 10],
-            ['nama_kriteria' => 'Inovasi dan Kreativitas', 'tipe' => 'benefit', 'bobot' => 15],
-            ['nama_kriteria' => 'Skalabilitas Usaha', 'tipe' => 'benefit', 'bobot' => 25],
-            // 2 Kriteria Tipe Cost
-            ['nama_kriteria' => 'Modal Awal', 'tipe' => 'cost', 'bobot' => 25],
-            ['nama_kriteria' => 'Tingkat Persaingan', 'tipe' => 'cost', 'bobot' => 15],
+
+            [
+                'nama_kriteria' => 'Banyak Peminatnya?',
+                'tipe' => 'benefit',
+                'bobot' => 30,
+            ],
+            [
+                'nama_kriteria' => 'Potensi Untung Besar?',
+                'tipe' => 'benefit',
+                'bobot' => 25,
+            ],
+            [
+                'nama_kriteria' => 'Bahan Baku Gampang Dicari?',
+                'tipe' => 'benefit',
+                'bobot' => 20,
+            ],
+            [
+                'nama_kriteria' => 'Mudah Dipasarkan?',
+                'tipe' => 'benefit',
+                'bobot' => 20,
+            ],
+            [
+                'nama_kriteria' => 'Bisa Cepat Berkembang?',
+                'tipe' => 'benefit',
+                'bobot' => 15,
+            ],
+            [
+                'nama_kriteria' => 'Bisa Dijalankan Jangka Panjang?',
+                'tipe' => 'benefit',
+                'bobot' => 15,
+            ],
+            [
+                'nama_kriteria' => 'Punya Keunikan/Inovasi?',
+                'tipe' => 'benefit',
+                'bobot' => 10,
+            ],
+            [
+                'nama_kriteria' => 'Waktu Kerjanya Fleksibel?',
+                'tipe' => 'benefit',
+                'bobot' => 5,
+            ],
+
+            [
+                'nama_kriteria' => 'Butuh Modal Besar?',
+                'tipe' => 'cost',
+                'bobot' => 25,
+            ],
+            [
+                'nama_kriteria' => 'Banyak Saingannya?',
+                'tipe' => 'cost',
+                'bobot' => 20,
+            ],
         ];
 
-        // Memasukkan data ke dalam tabel
         foreach ($kriterias as $kriteria) {
             Kriteria::create($kriteria);
         }

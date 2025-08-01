@@ -21,7 +21,6 @@
                 @if (session('error'))
                     <div class="alert alert-danger text-white">{{ session('error') }}</div>
                 @endif
-
                 @if ($errors->any())
                     <div class="alert alert-danger text-white">
                         <ul class="mb-0">
@@ -33,8 +32,10 @@
                 @endif
 
                 <div class="alert alert-info text-white">
-                    <i class="fas fa-info-circle me-2"></i>
-                    Anda sedang bekerja dengan <strong>{{ $kriterias->count() }} kriteria</strong> yang dipilih. Silakan isi semua nilai di bawah ini sebelum melanjutkan.
+                    <h6 class="text-white mb-1"><i class="fas fa-info-circle me-2"></i>Petunjuk Pengisian</h6>
+                    <p class="mb-0 text-sm">
+                        Pada tahap ini, Anda perlu memberikan penilaian untuk setiap <strong>Alternatif</strong> berdasarkan <strong>Kriteria</strong> yang sudah Anda pilih. Silakan pilih nilai dari setiap menu dropdown yang tersedia.
+                    </p>
                 </div>
 
                 <form action="{{ route('alternatif.simpanDanLanjutkan') }}" method="POST">
@@ -49,12 +50,12 @@
                                         <h5 class="mb-0">{{ $loop->iteration }}. {{ $alternatif->nama_alternatif }}</h5>
                                         <div>
                                             <a href="{{ route('alternatif.edit', $alternatif->id) }}" class="btn btn-warning btn-sm mb-0" title="Edit Nama">
-                                                <i class="fas fa-edit"></i> Edit Nama
+                                                <i class="fas fa-edit me-1"></i> Edit Nama
                                             </a>
                                             <button type="button" class="btn btn-danger btn-sm mb-0"
                                                     onclick="if(confirm('Anda yakin ingin menghapus alternatif ini?')) { document.getElementById('delete-form-{{ $alternatif->id }}').submit(); }"
                                                     title="Hapus">
-                                                <i class="fas fa-trash"></i> Hapus
+                                                <i class="fas fa-trash me-1"></i> Hapus
                                             </button>
                                         </div>
                                     </div>
@@ -81,7 +82,7 @@
 
                         <div class="text-end mt-4">
                             <button type="submit" class="btn btn-success btn-lg">
-                                <i class="fas fa-save me-2"></i> Simpan Nilai & Lanjutkan ke Perhitungan
+                                <i class="fas fa-calculator me-2"></i> Simpan Nilai & Lanjutkan
                             </button>
                         </div>
                     @else

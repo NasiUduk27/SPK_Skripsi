@@ -28,6 +28,17 @@
                 </label>
                 @endforeach
             </div>
+            
+            <div class="mt-4 pt-3 border-top">
+                <h6 class="font-weight-bolder">Catatan:</h6>
+                <p class="text-sm text-muted mb-1">
+                    <strong class="text-success">Benefit (Keuntungan):</strong> Berarti untuk kriteria ini, semakin TINGGI nilainya maka akan semakin BAGUS.
+                </p>
+                <p class="text-sm text-muted mb-0">
+                    <strong class="text-danger">Cost (Biaya):</strong> Berarti untuk kriteria ini, semakin RENDAH nilainya maka akan semakin BAGUS.
+                </p>
+            </div>
+
         </div>
         <div class="card-footer text-end">
             <button type="submit" class="btn btn-primary">
