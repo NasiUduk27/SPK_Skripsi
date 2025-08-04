@@ -10,8 +10,12 @@ class KriteriaSeeder extends Seeder
 {
     /**
      * Menjalankan proses seeding untuk database.
-     * Latar belakang kriteria ini didasarkan pada analisis kelayakan bisnis umum
-     * yang relevan untuk usaha skala kecil hingga menengah.
+     *
+     * Latar Belakang:
+     * Kriteria dan bobot ini disusun berdasarkan studi umum mengenai faktor penentu keberhasilan
+     * usaha kecil dan menengah (UMKM). Bobot tertinggi diberikan pada aspek fundamental
+     * seperti potensi keuntungan dan permintaan pasar. Nama kriteria diubah menjadi
+     * format pertanyaan agar sesuai dengan skala penilaian (Rendah, Sedang, Tinggi).
      *
      * @return void
      */
@@ -24,55 +28,56 @@ class KriteriaSeeder extends Seeder
         $kriterias = [
 
             [
-                'nama_kriteria' => 'Banyak Peminatnya?',
+                'nama_kriteria' => 'Seberapa besar potensi untungnya?',
                 'tipe' => 'benefit',
-                'bobot' => 30,
+                'bobot' => 0.20,
             ],
             [
-                'nama_kriteria' => 'Potensi Untung Besar?',
+                'nama_kriteria' => 'Seberapa banyak peminat di pasar?',
                 'tipe' => 'benefit',
-                'bobot' => 25,
+                'bobot' => 0.20,
             ],
             [
-                'nama_kriteria' => 'Bahan Baku Gampang Dicari?',
-                'tipe' => 'benefit',
-                'bobot' => 20,
+                'nama_kriteria' => 'Seberapa besar modal awalnya?',
+                'tipe' => 'cost',
+                'bobot' => 0.15,
             ],
             [
-                'nama_kriteria' => 'Mudah Dipasarkan?',
-                'tipe' => 'benefit',
-                'bobot' => 20,
-            ],
-            [
-                'nama_kriteria' => 'Bisa Cepat Berkembang?',
-                'tipe' => 'benefit',
-                'bobot' => 15,
-            ],
-            [
-                'nama_kriteria' => 'Bisa Dijalankan Jangka Panjang?',
-                'tipe' => 'benefit',
-                'bobot' => 15,
-            ],
-            [
-                'nama_kriteria' => 'Punya Keunikan/Inovasi?',
-                'tipe' => 'benefit',
-                'bobot' => 10,
-            ],
-            [
-                'nama_kriteria' => 'Waktu Kerjanya Fleksibel?',
-                'tipe' => 'benefit',
-                'bobot' => 5,
+                'nama_kriteria' => 'Seberapa banyak saingannya?',
+                'tipe' => 'cost',
+                'bobot' => 0.10,
             ],
 
             [
-                'nama_kriteria' => 'Butuh Modal Besar?',
-                'tipe' => 'cost',
-                'bobot' => 25,
+                'nama_kriteria' => 'Seberapa tahan lama usahanya?',
+                'tipe' => 'benefit',
+                'bobot' => 0.10,
             ],
             [
-                'nama_kriteria' => 'Banyak Saingannya?',
-                'tipe' => 'cost',
-                'bobot' => 20,
+                'nama_kriteria' => 'Seberapa mudah pemasarannya?',
+                'tipe' => 'benefit',
+                'bobot' => 0.07,
+            ],
+            [
+                'nama_kriteria' => 'Seberapa mudah mencari bahan bakunya?',
+                'tipe' => 'benefit',
+                'bobot' => 0.05,
+            ],
+            [
+                'nama_kriteria' => 'Seberapa besar peluang untuk berkembang?',
+                'tipe' => 'benefit',
+                'bobot' => 0.05,
+            ],
+
+            [
+                'nama_kriteria' => 'Seberapa unik produk/jasanya?',
+                'tipe' => 'benefit',
+                'bobot' => 0.04,
+            ],
+            [
+                'nama_kriteria' => 'Seberapa fleksibel waktu kerjanya?',
+                'tipe' => 'benefit',
+                'bobot' => 0.04,
             ],
         ];
 
